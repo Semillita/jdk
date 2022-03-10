@@ -2703,13 +2703,25 @@ void AwtWindow::SetIconData(JNIEnv* env, jintArray iconRaster, jint w, jint h,
         hOldIcon = m_hIcon;
     }
     m_hIcon = NULL;
+
     if ((m_hIconSm != NULL) && !m_iconInherited) {
         hOldIconSm = m_hIconSm;
     }
     m_hIconSm = NULL;
+
     m_hIcon = CreateIconFromRaster(env, iconRaster, w, h);
-    JNU_CHECK_EXCEPTION(env);
+    if ((env)->ExceptionCheck()) {
+        DestroyIcon(hOldIcon);
+        DestroyIcon(hOldIconSm);
+        return;
+    }
+
     m_hIconSm = CreateIconFromRaster(env, smallIconRaster, smw, smh);
+    if ((env)->ExceptionCheck()) {
+        DestroyIcon(hOldIcon);
+        DestroyIcon(hOldIconSm);
+        return;
+    }
 
     m_iconInherited = (m_hIcon == NULL);
     if (m_iconInherited) {
